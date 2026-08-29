@@ -11,13 +11,16 @@ DOC_PATH = 'DOCUMENTATION.md'
 OUT_PATH = 'DOCUMENTATION.docx'
 IMG_PATH = 'assets/screenshot.png'
 
-# Black + gold palette
+# White + gold/cream palette
 BLACK = (10, 10, 10)
-DARK_GRAY = (30, 30, 30)
+DARK_GRAY = (50, 50, 50)
 GOLD = (212, 175, 55)
 LIGHT_GOLD = (255, 223, 128)
+CREAM = (255, 250, 235)
+LIGHT_CREAM = (255, 245, 220)
 WHITE = (255, 255, 255)
-OFF_WHITE = (230, 230, 230)
+OFF_WHITE = (250, 250, 250)
+TEXT_DARK = (40, 40, 40)
 
 
 def set_cell_shading(cell, color):
@@ -70,7 +73,7 @@ def add_formatted_text(paragraph, text):
         run = paragraph.add_run()
         if part.startswith('**') and part.endswith('**'):
             run.text = part[2:-2]
-            set_run_font(run, bold=True, color=LIGHT_GOLD)
+            set_run_font(run, bold=True, color=GOLD)
         else:
             run.text = part
             set_run_font(run)
@@ -102,7 +105,7 @@ def set_document_background(doc, color):
 
 def build_doc():
     doc = Document()
-    set_document_background(doc, BLACK)
+    set_document_background(doc, WHITE)
 
     # Page setup
     section = doc.sections[0]
@@ -120,7 +123,7 @@ def build_doc():
         style = styles[style_name]
         style.font.name = 'Arial'
         style.font.size = Pt(11)
-        style.font.color.rgb = RGBColor(*OFF_WHITE)
+        style.font.color.rgb = RGBColor(*TEXT_DARK)
         style.paragraph_format.space_after = Pt(6)
         style.paragraph_format.line_spacing = 1.15
 
@@ -134,13 +137,13 @@ def build_doc():
         style.paragraph_format.space_before = Pt(14)
         style.paragraph_format.space_after = Pt(8)
 
-    # Cover page (black background via table trick)
+    # Cover page (white + gold/cream)
     cover_table = doc.add_table(rows=1, cols=1)
     cover_table.alignment = WD_TABLE_ALIGNMENT.CENTER
     cover_cell = cover_table.cell(0, 0)
     cover_cell.width = Inches(6)
-    set_cell_shading(cover_cell, BLACK)
-    set_cell_border(cover_cell, GOLD, size='12')
+    set_cell_shading(cover_cell, CREAM)
+    set_cell_border(cover_cell, GOLD, size='16')
 
     cover_para = cover_cell.paragraphs[0]
     cover_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -148,14 +151,14 @@ def build_doc():
     set_run_font(run, name='Arial', size=28, color=GOLD, bold=True)
 
     run = cover_para.add_run('Dart Console Application\n\n')
-    set_run_font(run, name='Arial', size=16, color=LIGHT_GOLD, bold=True)
+    set_run_font(run, name='Arial', size=16, color=DARK_GRAY, bold=True)
 
     run = cover_para.add_run('Name: Soumitra Deshpande\n')
-    set_run_font(run, size=13, color=OFF_WHITE)
+    set_run_font(run, size=13, color=TEXT_DARK)
     run = cover_para.add_run('Roll No: 150096724035\n')
-    set_run_font(run, size=13, color=OFF_WHITE)
+    set_run_font(run, size=13, color=TEXT_DARK)
     run = cover_para.add_run('Environment: Dart SDK 3.x\n\n')
-    set_run_font(run, size=12, color=OFF_WHITE)
+    set_run_font(run, size=12, color=TEXT_DARK)
 
     run = cover_para.add_run('August 2026\n\n')
     set_run_font(run, size=11, color=GOLD)
@@ -188,11 +191,11 @@ def build_doc():
                 code_table.alignment = WD_TABLE_ALIGNMENT.LEFT
                 code_cell = code_table.cell(0, 0)
                 code_cell.width = Inches(6)
-                set_cell_shading(code_cell, DARK_GRAY)
+                set_cell_shading(code_cell, CREAM)
                 set_cell_border(code_cell, GOLD, size='4')
                 code_para = code_cell.paragraphs[0]
                 run = code_para.add_run('\n'.join(code_lines))
-                set_run_font(run, name='Consolas', size=9, color=OFF_WHITE)
+                set_run_font(run, name='Consolas', size=9, color=TEXT_DARK)
                 in_code = False
             i += 1
             continue
@@ -229,15 +232,15 @@ def build_doc():
                     set_cell_border(hdr_cells[col_idx], GOLD, size='6')
                     hdr_cells[col_idx].text = ''
                     run = hdr_cells[col_idx].paragraphs[0].add_run(cell_text)
-                    set_run_font(run, bold=True, color=BLACK)
+                    set_run_font(run, bold=True, color=WHITE)
                 for row in rows[1:]:
                     row_cells = table.add_row().cells
                     for col_idx, cell_text in enumerate(row):
-                        set_cell_shading(row_cells[col_idx], DARK_GRAY)
+                        set_cell_shading(row_cells[col_idx], LIGHT_CREAM)
                         set_cell_border(row_cells[col_idx], GOLD, size='4')
                         row_cells[col_idx].text = ''
                         run = row_cells[col_idx].paragraphs[0].add_run(cell_text)
-                        set_run_font(run, color=OFF_WHITE)
+                        set_run_font(run, color=TEXT_DARK)
             continue
 
         # Images
