@@ -7,39 +7,36 @@
 
 ---
 
-## 1. Executive Summary
+## 1. The Pitch
 
-This project models a **community board game lending library** as a console application in Dart. Instead of the usual physical/digital book catalog, it manages tabletop games: board games, card games, and RPG manuals. The app demonstrates variables, control flow, loops, functions, and object-oriented inheritance in a clean, modular way.
+Most first-year console apps model a book library. This one models something far more interesting: a **community board game lending library**. Instead of tracking paperbacks and e-books, it tracks tabletop games — board games, card games, and RPG manuals — and helps members find the right game for the right group.
 
-### Objectives
-- Model real-world game lending with an abstract base class and subclasses.
-- Use `List<Game>` for the catalog and `Map<String, Member>` for member lookup.
-- Implement named parameters, default values, and typed return values.
-- Use `for`, `while`, and `for-in` loops for different operations.
+The app is built in Dart and demonstrates variables, control flow, loops, functions, and object-oriented inheritance without copying the usual physical/digital media split.
 
 ---
 
-## 2. Dart Language Fundamentals
+## 2. A Shift at the Library
 
-| Concept | Usage in Project |
-|---|---|
-| **Variables** | `String`, `int`, `double`, `bool`, `List<Game>`, `Map<String, Member>` |
-| **Null Safety** | `Game?` for nullable search results; `required` named params |
-| **Functions** | Named params with `required`, optional defaults (`dailyRate = 1.5`), typed returns |
-| **Loops** | Indexed `for` in catalog list, `while` in recommendation search, `for-in` for member borrows |
-| **Collections** | `List` for catalog and borrowed items, `Map` for member registry |
+Here is what happens when the program runs:
+
+1. The librarian opens the catalog. Four games are listed: two board games, one card game, and one RPG manual.
+2. **Soumitra Deshpande** borrows *Wingspan*. **Alex Chen** borrows *Love Letter*.
+3. A group of three friends walks in. The librarian runs a recommendation check and suggests *Catan* because it supports exactly three players.
+4. Soumitra returns *Wingspan*.
+5. The system prints each member's current borrow record.
+6. The late-fee calculator shows what happens if games come back overdue.
+
+This single workflow exercises every required Dart concept.
 
 ---
 
-## 3. Object-Oriented Architecture
+## 3. What's Under the Hood
 
-### Four Pillars
-1. **Abstraction** — `Game` is abstract; it defines the contract `describe()` without implementation.
-2. **Inheritance** — `BoardGame`, `CardGame`, and `RPGManual` extend `Game` using `super` parameters.
-3. **Polymorphism** — Each subclass `@override` the `describe()` method for its own output format.
-4. **Encapsulation** — `GameLibrary` controls catalog and borrow logic; `Member` owns its borrow list.
+The system is built around three ideas:
 
-### Class Hierarchy
+- **A shared base type.** Every item in the catalog is a `Game`. The exact kind of game is handled by subclasses.
+- **A member registry.** Members are stored in a `Map<String, Member>` for fast lookup by ID.
+- **A librarian.** `GameLibrary` holds the catalog, registers members, handles checkout/return, and recommends games.
 
 ```mermaid
 classDiagram
@@ -59,28 +56,23 @@ classDiagram
         +int playerCountMax
         +int playTimeMinutes
         +double complexityRating
-        +describe() void
     }
     class CardGame {
         +int deckSize
         +int avgPlayTimeMinutes
-        +describe() void
     }
     class RPGManual {
         +String edition
         +int pageCount
-        +describe() void
     }
     class Member {
         +String memberId
         +String name
         +List~Game~ borrowedGames
-        +showBorrowedGames() void
     }
     class GameLibrary {
         +List~Game~ catalog
         +Map~String,Member~ members
-        +addGame() void
         +borrowGame() bool
         +returnGame() bool
         +recommendForPlayers() void
@@ -88,103 +80,77 @@ classDiagram
     Game <|-- BoardGame
     Game <|-- CardGame
     Game <|-- RPGManual
+    GameLibrary --> Game
+    GameLibrary --> Member
 ```
 
 ---
 
-## 4. System Architecture
+## 4. Dart Concepts in Action
 
-```
-┌─────────────────────────────────────┐
-│           main.dart                 │
-│  Creates games, members, and runs   │
-│  the demonstration workflow.        │
-└──────────────┬──────────────────────┘
-               │
-┌──────────────▼──────────────────────┐
-│         GameLibrary                 │
-│  Catalog (List<Game>)               │
-│  Members (Map<String, Member>)      │
-└──────────────┬──────────────────────┘
-               │ uses
-┌──────────────▼──────────────────────┐
-│  BoardGame / CardGame / RPGManual   │
-│  (inherit from abstract Game)       │
-└─────────────────────────────────────┘
-```
-
----
-
-## 5. Algorithmic Complexity
-
-| Operation | Structure | Average Complexity |
-|---|---|---|
-| Add game | `List.add` | O(1) amortized |
-| Register member | `Map` insertion | O(1) |
-| Find game by ID | Linear scan of `List` | O(n) |
-| Find member by ID | `Map` lookup | O(1) |
-| Recommend games | Linear `while` scan | O(n) |
-
----
-
-## 6. File-by-File Breakdown
-
-### `lib/game.dart`
-Abstract base class `Game`. Holds common fields (`id`, `title`, `publisher`, `releaseYear`, `genre`, `isAvailable`) and declares the abstract `describe()` method.
-
-### `lib/board_game.dart`
-Subclass for board games. Adds `playerCountMin`, `playerCountMax`, `playTimeMinutes`, and `complexityRating`.
-
-### `lib/card_game.dart`
-Subclass for card games. Adds `deckSize` and `avgPlayTimeMinutes`.
-
-### `lib/rpg_manual.dart`
-Subclass for RPG manuals. Adds `edition` and `pageCount`.
-
-### `lib/member.dart`
-Represents a library member. Tracks `memberId`, `name`, and a `List<Game>` of borrowed items.
-
-### `lib/game_library.dart`
-Central controller. Manages catalog and members, handles borrow/return logic, and recommends board games by player count using a `while` loop.
-
-### `lib/late_fee_calculator.dart`
-Pure utility function with named parameters and a default rate. Applies multipliers based on game type.
-
-### `lib/main.dart`
-Driver script. Creates sample data, runs catalog listing, borrows, recommends, returns, and prints late fees.
-
----
-
-## 7. Edge Cases Handled
-
-| Scenario | Handling |
+| Requirement | Where It Lives |
 |---|---|
-| Member not found | `Map` lookup returns `null`; prints error and returns `false` |
-| Game not found | Search returns `null`; prints error and returns `false` |
-| Game already borrowed | Checks `isAvailable` before lending |
-| Returning a game not borrowed | Validates `borrowedGames.contains(game)` |
-| Zero/negative overdue days | `calculateLateFee` returns `0.0` |
-| No recommendations found | Prints a clear "No available board games found" message |
+| Variables (`String`, `int`, `double`, `bool`) | `Game` fields, `BoardGame.playerCountMin`, `RPGManual.pageCount` |
+| Collections (`List`, `Map`) | `GameLibrary.catalog`, `Member.borrowedGames`, `GameLibrary.members` |
+| Named parameters & defaults | `calculateLateFee({required int overdueDays, double dailyRate = 1.5})` |
+| Typed return values | `borrowGame()` returns `bool`, `findGameById()` returns `Game?` |
+| `for` loop | Indexed catalog listing in `GameLibrary.listCatalog()` |
+| `while` loop | Player-count recommendation search in `recommendForPlayers()` |
+| `for-in` loop | Iterating member borrows in `Member.showBorrowedGames()` |
+| Abstract class | `Game` with abstract `describe()` |
+| Inheritance | `BoardGame`, `CardGame`, `RPGManual` extend `Game` |
+| Polymorphism | Each subclass `@override` of `describe()` |
+| Encapsulation | Borrow/return logic controlled by `GameLibrary` |
 
 ---
 
-## 8. Step-by-Step Execution Trace
+## 5. File Guide
 
-1. `GameLibrary` is instantiated.
-2. Four games are added to the catalog: two board games, one card game, one RPG manual.
-3. Two members are registered: **Soumitra Deshpande** and **Alex Chen**.
-4. `listCatalog()` prints all games with an indexed `for` loop.
-5. Soumitra borrows **Wingspan**; Alex borrows **Love Letter**.
-6. `recommendForPlayers(3)` uses a `while` loop and finds **Catan**.
-7. Soumitra returns **Wingspan**.
-8. `for-in` loop prints each member's current borrow list.
-9. Late fees are calculated for card game and RPG manual.
+| File | Responsibility |
+|---|---|
+| `lib/game.dart` | Abstract `Game` base class |
+| `lib/board_game.dart` | Board-game subclass with player counts and complexity |
+| `lib/card_game.dart` | Card-game subclass with deck size |
+| `lib/rpg_manual.dart` | RPG manual subclass with edition and page count |
+| `lib/member.dart` | Member record and active borrow list |
+| `lib/game_library.dart` | Central controller for catalog and transactions |
+| `lib/late_fee_calculator.dart` | Pure function for overdue fees |
+| `lib/main.dart` | Demo script that runs the workflow |
 
 ---
 
-## 9. Console Verification
+## 6. Design Notes
 
-The program was executed successfully with the following output:
+**Why inheritance?** Board games, card games, and RPG manuals share common fields — title, publisher, year, genre, availability — but each has unique data. An abstract `Game` class lets the rest of the system treat every item uniformly while subclasses store their own details.
+
+**Why a `while` loop for recommendations?** The assignment required multiple loop types. The recommendation search is a natural fit for `while` because it scans until the catalog ends and conditionally collects matches.
+
+**Why named parameters everywhere?** Dart's `{required ...}` syntax removes ambiguity. `borrowGame(memberId: 'M001', gameId: 'BG002')` is clearer than positional arguments.
+
+---
+
+## 7. Edge Cases That Don't Break It
+
+| Situation | Behavior |
+|---|---|
+| Invalid member ID | `Map` lookup returns `null`; transaction is rejected |
+| Invalid game ID | Search returns `null`; transaction is rejected |
+| Borrowing an already-borrowed game | Blocked by `isAvailable` check |
+| Returning a game you never borrowed | Rejected after checking `borrowedGames` |
+| Zero or negative overdue days | `calculateLateFee` returns `$0.00` |
+| No games match the player count | Prints a clear message instead of crashing |
+
+---
+
+## 8. Run It Yourself
+
+```bash
+cd assignment_1
+dart pub get
+dart run lib/main.dart
+```
+
+Expected output:
 
 ```
 === GAME CATALOG ===
@@ -225,21 +191,23 @@ Card game 5 days late: $7.50
 RPG manual 3 days late: $9.00
 ```
 
-A terminal screenshot is attached below:
+---
+
+## 9. Terminal Proof
 
 ![Terminal execution screenshot](assets/screenshot.png)
 
 ---
 
-## 10. Future Extensibility
+## 10. What Could Come Next
 
-- Add `Reservation` class for game reservations.
-- Persist catalog and member data to JSON or SQLite.
-- Add due-date tracking and automatic overdue notifications.
-- Build a CLI menu for interactive borrow/return operations.
+- Add a `Reservation` class for holds on borrowed games.
+- Persist the catalog and member list to JSON.
+- Add due dates and automatic overdue reminders.
+- Build an interactive CLI menu instead of a fixed demo.
 
 ---
 
-## 11. Conclusion
+## 11. Closing
 
-This Dart console application demonstrates core programming concepts through a practical, non-trivial domain. By choosing a board game lending library instead of a generic book system, the assignment stays orthogonal to the reference while still clearly showcasing variables, loops, functions, and OOP inheritance.
+This assignment shows the same core Dart skills as a traditional library app, but applied to a different domain. A board game library needs the same inheritance, collections, and control flow — it just happens to be more fun to demo.
