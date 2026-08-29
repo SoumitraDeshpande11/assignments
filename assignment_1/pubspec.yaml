@@ -1,0 +1,10 @@
+name: assignment_1
+description: A Dart console app modeling a community board game lending library.
+publish_to: 'none'
+version: 1.0.0
+
+environment:
+  sdk: '^3.0.0'
+
+dependencies:
+dev_dependencies:
