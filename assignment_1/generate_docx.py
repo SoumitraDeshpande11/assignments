@@ -42,7 +42,7 @@ def set_cell_border(cell, color, size='4'):
     tcPr.append(tcBorders)
 
 
-def set_run_font(run, name='Arial', size=11, color=OFF_WHITE, bold=False):
+def set_run_font(run, name='Arial', size=11, color=TEXT_DARK, bold=False):
     run.font.name = name
     run.font.size = Pt(size)
     run.font.color.rgb = RGBColor(*color)
@@ -117,15 +117,18 @@ def build_doc():
     section.right_margin = Cm(2.5)
     add_page_number(section)
 
-    # Default styles
+    # Default styles (include list styles so bullets/numbers are dark too)
     styles = doc.styles
-    for style_name in ['Normal']:
-        style = styles[style_name]
-        style.font.name = 'Arial'
-        style.font.size = Pt(11)
-        style.font.color.rgb = RGBColor(*TEXT_DARK)
-        style.paragraph_format.space_after = Pt(6)
-        style.paragraph_format.line_spacing = 1.15
+    for style_name in ['Normal', 'List Paragraph', 'List Bullet', 'List Number']:
+        try:
+            style = styles[style_name]
+            style.font.name = 'Arial'
+            style.font.size = Pt(11)
+            style.font.color.rgb = RGBColor(*TEXT_DARK)
+            style.paragraph_format.space_after = Pt(6)
+            style.paragraph_format.line_spacing = 1.15
+        except KeyError:
+            pass
 
     # Heading styles
     for i, size in enumerate([20, 16, 13, 12], start=1):
@@ -207,15 +210,21 @@ def build_doc():
 
         # Headings
         if line.startswith('## '):
-            doc.add_heading(line[3:], level=1)
+            h = doc.add_heading(level=1)
+            run = h.add_run(line[3:])
+            set_run_font(run, size=20, color=GOLD, bold=True)
             i += 1
             continue
         if line.startswith('### '):
-            doc.add_heading(line[4:], level=2)
+            h = doc.add_heading(level=2)
+            run = h.add_run(line[4:])
+            set_run_font(run, size=16, color=GOLD, bold=True)
             i += 1
             continue
         if line.startswith('#### '):
-            doc.add_heading(line[5:], level=3)
+            h = doc.add_heading(level=3)
+            run = h.add_run(line[5:])
+            set_run_font(run, size=13, color=GOLD, bold=True)
             i += 1
             continue
 
@@ -262,10 +271,19 @@ def build_doc():
             i += 1
             continue
 
-        # Regular paragraphs
+        # Skip horizontal rules
+        if line.strip() in ('---', '***', '___'):
+            i += 1
+            continue
+
+        # Regular paragraphs and bullet lists
         if line.strip():
-            p = doc.add_paragraph()
-            add_formatted_text(p, line)
+            if line.strip().startswith('- '):
+                p = doc.add_paragraph(style='List Bullet')
+                add_formatted_text(p, line.strip()[2:])
+            else:
+                p = doc.add_paragraph()
+                add_formatted_text(p, line)
 
         i += 1
 
