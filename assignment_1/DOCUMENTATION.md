@@ -7,142 +7,15 @@
 
 ---
 
-## 1. The Pitch
+## 1. What This Is
 
-Most first-year console apps model a book library. This one models something far more interesting: a **community board game lending library**. Instead of tracking paperbacks and e-books, it tracks tabletop games — board games, card games, and RPG manuals — and helps members find the right game for the right group.
+A Dart console app that models a neighborhood board game lending library. It manages a catalog of tabletop games — board games, card games, RPG manuals — lets members borrow and return them, recommends games by player count, and calculates late fees.
 
-The app is built in Dart and demonstrates variables, control flow, loops, functions, and object-oriented inheritance without copying the usual physical/digital media split.
-
----
-
-## 2. A Shift at the Library
-
-Here is what happens when the program runs:
-
-1. The librarian opens the catalog. Four games are listed: two board games, one card game, and one RPG manual.
-2. **Soumitra Deshpande** borrows *Wingspan*. **Alex Chen** borrows *Love Letter*.
-3. A group of three friends walks in. The librarian runs a recommendation check and suggests *Catan* because it supports exactly three players.
-4. Soumitra returns *Wingspan*.
-5. The system prints each member's current borrow record.
-6. The late-fee calculator shows what happens if games come back overdue.
-
-This single workflow exercises every required Dart concept.
+The assignment brief asked for variables, loops, functions, and OOP with inheritance. This app hits all four through the lens of game lending.
 
 ---
 
-## 3. What's Under the Hood
-
-The system is built around three ideas:
-
-- **A shared base type.** Every item in the catalog is a `Game`. The exact kind of game is handled by subclasses.
-- **A member registry.** Members are stored in a `Map<String, Member>` for fast lookup by ID.
-- **A librarian.** `GameLibrary` holds the catalog, registers members, handles checkout/return, and recommends games.
-
-```mermaid
-classDiagram
-    direction TB
-    class Game {
-        <<abstract>>
-        +String id
-        +String title
-        +String publisher
-        +int releaseYear
-        +String genre
-        +bool isAvailable
-        +describe()* void
-    }
-    class BoardGame {
-        +int playerCountMin
-        +int playerCountMax
-        +int playTimeMinutes
-        +double complexityRating
-    }
-    class CardGame {
-        +int deckSize
-        +int avgPlayTimeMinutes
-    }
-    class RPGManual {
-        +String edition
-        +int pageCount
-    }
-    class Member {
-        +String memberId
-        +String name
-        +List~Game~ borrowedGames
-    }
-    class GameLibrary {
-        +List~Game~ catalog
-        +Map~String,Member~ members
-        +borrowGame() bool
-        +returnGame() bool
-        +recommendForPlayers() void
-    }
-    Game <|-- BoardGame
-    Game <|-- CardGame
-    Game <|-- RPGManual
-    GameLibrary --> Game
-    GameLibrary --> Member
-```
-
----
-
-## 4. Dart Concepts in Action
-
-| Requirement | Where It Lives |
-|---|---|
-| Variables (`String`, `int`, `double`, `bool`) | `Game` fields, `BoardGame.playerCountMin`, `RPGManual.pageCount` |
-| Collections (`List`, `Map`) | `GameLibrary.catalog`, `Member.borrowedGames`, `GameLibrary.members` |
-| Named parameters & defaults | `calculateLateFee({required int overdueDays, double dailyRate = 1.5})` |
-| Typed return values | `borrowGame()` returns `bool`, `findGameById()` returns `Game?` |
-| `for` loop | Indexed catalog listing in `GameLibrary.listCatalog()` |
-| `while` loop | Player-count recommendation search in `recommendForPlayers()` |
-| `for-in` loop | Iterating member borrows in `Member.showBorrowedGames()` |
-| Abstract class | `Game` with abstract `describe()` |
-| Inheritance | `BoardGame`, `CardGame`, `RPGManual` extend `Game` |
-| Polymorphism | Each subclass `@override` of `describe()` |
-| Encapsulation | Borrow/return logic controlled by `GameLibrary` |
-
----
-
-## 5. File Guide
-
-| File | Responsibility |
-|---|---|
-| `lib/game.dart` | Abstract `Game` base class |
-| `lib/board_game.dart` | Board-game subclass with player counts and complexity |
-| `lib/card_game.dart` | Card-game subclass with deck size |
-| `lib/rpg_manual.dart` | RPG manual subclass with edition and page count |
-| `lib/member.dart` | Member record and active borrow list |
-| `lib/game_library.dart` | Central controller for catalog and transactions |
-| `lib/late_fee_calculator.dart` | Pure function for overdue fees |
-| `lib/main.dart` | Demo script that runs the workflow |
-
----
-
-## 6. Design Notes
-
-**Why inheritance?** Board games, card games, and RPG manuals share common fields — title, publisher, year, genre, availability — but each has unique data. An abstract `Game` class lets the rest of the system treat every item uniformly while subclasses store their own details.
-
-**Why a `while` loop for recommendations?** The assignment required multiple loop types. The recommendation search is a natural fit for `while` because it scans until the catalog ends and conditionally collects matches.
-
-**Why named parameters everywhere?** Dart's `{required ...}` syntax removes ambiguity. `borrowGame(memberId: 'M001', gameId: 'BG002')` is clearer than positional arguments.
-
----
-
-## 7. Edge Cases That Don't Break It
-
-| Situation | Behavior |
-|---|---|
-| Invalid member ID | `Map` lookup returns `null`; transaction is rejected |
-| Invalid game ID | Search returns `null`; transaction is rejected |
-| Borrowing an already-borrowed game | Blocked by `isAvailable` check |
-| Returning a game you never borrowed | Rejected after checking `borrowedGames` |
-| Zero or negative overdue days | `calculateLateFee` returns `$0.00` |
-| No games match the player count | Prints a clear message instead of crashing |
-
----
-
-## 8. Run It Yourself
+## 2. Quick Start
 
 ```bash
 cd assignment_1
@@ -150,7 +23,13 @@ dart pub get
 dart run lib/main.dart
 ```
 
-Expected output:
+The demo creates four games, registers two members, runs a full borrow-return cycle, and prints late fees.
+
+---
+
+## 3. The Demo
+
+When you run the app, this is what happens on screen:
 
 ```
 === GAME CATALOG ===
@@ -191,23 +70,106 @@ Card game 5 days late: $7.50
 RPG manual 3 days late: $9.00
 ```
 
+Every required Dart feature appears somewhere in this output.
+
 ---
 
-## 9. Terminal Proof
+## 4. How the Recommendation Logic Works
+
+The most board-game-specific part of the code is `GameLibrary.recommendForPlayers(int playerCount)`.
+
+It uses a `while` loop to walk the catalog. For each `BoardGame`, it checks:
+
+- Is the game available?
+- Does the requested player count fall between `playerCountMin` and `playerCountMax`?
+
+If all three pass, the game is printed as a recommendation.
+
+```dart
+void recommendForPlayers(int playerCount) {
+  bool found = false;
+  int index = 0;
+
+  while (index < catalog.length) {
+    final game = catalog[index];
+    if (game is BoardGame &&
+        game.isAvailable &&
+        game.playerCountMin <= playerCount &&
+        game.playerCountMax >= playerCount) {
+      print('  • ${game.title} (${game.playerRange} players, ${game.playTimeMinutes}m)');
+      found = true;
+    }
+    index++;
+  }
+
+  if (!found) {
+    print('  No available board games found for $playerCount players.');
+  }
+}
+```
+
+This is the heart of the app. It is why the class hierarchy exists: only `BoardGame` has `playerCountMin` and `playerCountMax`, so the `game is BoardGame` check is what makes the recommendation work.
+
+---
+
+## 5. Code Tour
+
+| File | What It Does |
+|---|---|
+| `lib/main.dart` | Entry point. Creates the library, adds games, registers members, runs the demo. |
+| `lib/game.dart` | Abstract base class. Holds shared fields (`id`, `title`, `publisher`, `releaseYear`, `genre`, `isAvailable`) and declares `describe()`. |
+| `lib/board_game.dart` | `BoardGame` subclass. Adds player counts, playtime, and complexity rating. |
+| `lib/card_game.dart` | `CardGame` subclass. Adds deck size and average playtime. |
+| `lib/rpg_manual.dart` | `RPGManual` subclass. Adds edition and page count. |
+| `lib/member.dart` | `Member` class. Tracks a member's borrowed games. |
+| `lib/game_library.dart` | `GameLibrary` controller. Manages catalog, members, borrowing, returning, and recommendations. |
+| `lib/late_fee_calculator.dart` | Pure utility for overdue fees. |
+
+### How the pieces connect
+
+```
+main.dart
+    ↓ creates
+GameLibrary
+    ├── manages catalog: List<Game>
+    │       └── Game (abstract)
+    │               ├── BoardGame  → playerCountMin/Max, playTimeMinutes, complexityRating
+    │               ├── CardGame   → deckSize, avgPlayTimeMinutes
+    │               └── RPGManual  → edition, pageCount
+    └── manages members: Map<String, Member>
+            └── Member → List<Game> borrowedGames
+```
+
+---
+
+## 6. When Things Go Wrong
+
+The app handles these board-game-specific edge cases:
+
+| Case | What Happens |
+|---|---|
+| A member tries to borrow a game that is already out | `borrowGame()` checks `isAvailable` and prints a message |
+| A member returns a game they never borrowed | `returnGame()` checks `borrowedGames.contains(game)` and rejects it |
+| Recommendation search for a player count nobody supports | The `while` loop finishes and prints "No available board games found" |
+| Recommendation search for a player count but all matches are borrowed | Same as above — `isAvailable` is checked before recommending |
+| Late fee for 0 or negative overdue days | `calculateLateFee()` returns `$0.00` immediately |
+| Late fee for an unrecognized game type | The `switch` falls back to a `1.0` multiplier (card game rate) |
+
+---
+
+## 7. Terminal Proof
 
 ![Terminal execution screenshot](assets/screenshot.png)
 
 ---
 
-## 10. What Could Come Next
+## 8. Next Steps
 
-- Add a `Reservation` class for holds on borrowed games.
-- Persist the catalog and member list to JSON.
-- Add due dates and automatic overdue reminders.
-- Build an interactive CLI menu instead of a fixed demo.
+- Persist the catalog to a JSON file so the library remembers state between runs.
+- Add due dates and track how long each game has been out.
+- Let members reserve games that are currently borrowed.
+- Build an interactive menu so librarians can add games and members at runtime.
 
 ---
 
-## 11. Closing
-
-This assignment shows the same core Dart skills as a traditional library app, but applied to a different domain. A board game library needs the same inheritance, collections, and control flow — it just happens to be more fun to demo.
+**Built by Soumitra Deshpande · Roll No. 150096724035**
