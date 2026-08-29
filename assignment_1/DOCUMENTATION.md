@@ -225,7 +225,9 @@ Card game 5 days late: $7.50
 RPG manual 3 days late: $9.00
 ```
 
-A terminal screenshot is attached at `assets/screenshot.png`.
+A terminal screenshot is attached below:
+
+![Terminal execution screenshot](assets/screenshot.png)
 
 ---
 

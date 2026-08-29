@@ -1,68 +1,161 @@
 from docx import Document
-from docx.shared import Inches, Pt, RGBColor
+from docx.shared import Inches, Pt, RGBColor, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.enum.style import WD_STYLE_TYPE
+from docx.enum.table import WD_TABLE_ALIGNMENT
+from docx.enum.section import WD_SECTION
+from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
 import re
 
 DOC_PATH = 'DOCUMENTATION.md'
 OUT_PATH = 'DOCUMENTATION.docx'
 IMG_PATH = 'assets/screenshot.png'
 
+# Black + gold palette
+BLACK = (10, 10, 10)
+DARK_GRAY = (30, 30, 30)
+GOLD = (212, 175, 55)
+LIGHT_GOLD = (255, 223, 128)
+WHITE = (255, 255, 255)
+OFF_WHITE = (230, 230, 230)
 
-def set_code_style(doc):
-    style = doc.styles.add_style('CodeStyle', WD_STYLE_TYPE.PARAGRAPH)
-    font = style.font
-    font.name = 'Consolas'
-    font.size = Pt(9)
-    font.color.rgb = RGBColor(50, 50, 50)
-    style.paragraph_format.space_after = Pt(4)
-    style.paragraph_format.left_indent = Inches(0.2)
+
+def set_cell_shading(cell, color):
+    tcPr = cell._tc.get_or_add_tcPr()
+    shd = OxmlElement('w:shd')
+    shd.set(qn('w:fill'), '%02x%02x%02x' % color)
+    tcPr.append(shd)
+
+
+def set_cell_border(cell, color, size='4'):
+    tcPr = cell._tc.get_or_add_tcPr()
+    tcBorders = OxmlElement('w:tcBorders')
+    for edge in ('top', 'left', 'bottom', 'right'):
+        edge_el = OxmlElement(f'w:{edge}')
+        edge_el.set(qn('w:val'), 'single')
+        edge_el.set(qn('w:sz'), size)
+        edge_el.set(qn('w:color'), '%02x%02x%02x' % color)
+        tcBorders.append(edge_el)
+    tcPr.append(tcBorders)
+
+
+def set_run_font(run, name='Arial', size=11, color=OFF_WHITE, bold=False):
+    run.font.name = name
+    run.font.size = Pt(size)
+    run.font.color.rgb = RGBColor(*color)
+    run.bold = bold
+
+
+def add_page_number(section):
+    footer = section.footer
+    paragraph = footer.paragraphs[0] if footer.paragraphs else footer.add_paragraph()
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = paragraph.add_run()
+    fldChar1 = OxmlElement('w:fldChar')
+    fldChar1.set(qn('w:fldCharType'), 'begin')
+    instrText = OxmlElement('w:instrText')
+    instrText.set(qn('xml:space'), 'preserve')
+    instrText.text = 'PAGE'
+    fldChar2 = OxmlElement('w:fldChar')
+    fldChar2.set(qn('w:fldCharType'), 'end')
+    run._r.append(fldChar1)
+    run._r.append(instrText)
+    run._r.append(fldChar2)
+    set_run_font(run, size=9, color=GOLD)
 
 
 def add_formatted_text(paragraph, text):
-    """Add text with bold markers **bold** to a paragraph."""
     parts = re.split(r'(\*\*.*?\*\*)', text)
     for part in parts:
         run = paragraph.add_run()
         if part.startswith('**') and part.endswith('**'):
             run.text = part[2:-2]
-            run.bold = True
+            set_run_font(run, bold=True, color=LIGHT_GOLD)
         else:
             run.text = part
+            set_run_font(run)
 
 
 def parse_table(lines, start_idx):
-    """Parse a markdown table and return (rows, next_index)."""
     rows = []
     i = start_idx
     while i < len(lines) and lines[i].strip().startswith('|'):
         cells = [c.strip() for c in lines[i].split('|')[1:-1]]
-        # Skip separator line
         if not all(set(c) <= set('- ') for c in cells):
             rows.append(cells)
         i += 1
     return rows, i
 
 
+def set_page_background(section, color):
+    sectPr = section._sectPr
+    shd = OxmlElement('w:shd')
+    shd.set(qn('w:fill'), '%02x%02x%02x' % color)
+    shd.set(qn('w:val'), 'clear')
+    sectPr.append(shd)
+
+
 def build_doc():
     doc = Document()
 
-    # Title styling
-    title = doc.add_heading('Community Board Game Lending Library', 0)
-    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    # Page setup
+    section = doc.sections[0]
+    section.page_height = Cm(29.7)
+    section.page_width = Cm(21.0)
+    section.top_margin = Cm(2)
+    section.bottom_margin = Cm(2)
+    section.left_margin = Cm(2.5)
+    section.right_margin = Cm(2.5)
+    set_page_background(section, BLACK)
+    add_page_number(section)
 
-    # Subtitle with name and roll no
-    subtitle = doc.add_paragraph()
-    subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = subtitle.add_run('Assignment 1 — Dart Console Application\n')
-    run.bold = True
-    run.font.size = Pt(12)
-    run = subtitle.add_run('Name: Soumitra Deshpande\nRoll No: 150096724035\nEnvironment: Dart SDK 3.x')
-    run.font.size = Pt(11)
+    # Default styles
+    styles = doc.styles
+    for style_name in ['Normal']:
+        style = styles[style_name]
+        style.font.name = 'Arial'
+        style.font.size = Pt(11)
+        style.font.color.rgb = RGBColor(*OFF_WHITE)
+        style.paragraph_format.space_after = Pt(6)
+        style.paragraph_format.line_spacing = 1.15
 
-    doc.add_paragraph()  # spacer
+    # Heading styles
+    for i, size in enumerate([20, 16, 13, 12], start=1):
+        style = styles[f'Heading {i}']
+        style.font.name = 'Arial'
+        style.font.size = Pt(size)
+        style.font.color.rgb = RGBColor(*GOLD)
+        style.font.bold = True
+        style.paragraph_format.space_before = Pt(14)
+        style.paragraph_format.space_after = Pt(8)
 
-    set_code_style(doc)
+    # Cover page (black background via table trick)
+    cover_table = doc.add_table(rows=1, cols=1)
+    cover_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    cover_cell = cover_table.cell(0, 0)
+    cover_cell.width = Inches(6)
+    set_cell_shading(cover_cell, BLACK)
+    set_cell_border(cover_cell, GOLD, size='12')
+
+    cover_para = cover_cell.paragraphs[0]
+    cover_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = cover_para.add_run('\n\nCOMMUNITY BOARD GAME\nLENDING LIBRARY\n')
+    set_run_font(run, name='Arial', size=28, color=GOLD, bold=True)
+
+    run = cover_para.add_run('Dart Console Application\n\n')
+    set_run_font(run, name='Arial', size=16, color=LIGHT_GOLD, bold=True)
+
+    run = cover_para.add_run('Name: Soumitra Deshpande\n')
+    set_run_font(run, size=13, color=OFF_WHITE)
+    run = cover_para.add_run('Roll No: 150096724035\n')
+    set_run_font(run, size=13, color=OFF_WHITE)
+    run = cover_para.add_run('Environment: Dart SDK 3.x\n\n')
+    set_run_font(run, size=12, color=OFF_WHITE)
+
+    run = cover_para.add_run('August 2026\n\n')
+    set_run_font(run, size=11, color=GOLD)
+
+    doc.add_page_break()
 
     with open(DOC_PATH, 'r', encoding='utf-8') as f:
         lines = f.read().splitlines()
@@ -70,12 +163,11 @@ def build_doc():
     i = 0
     in_code = False
     code_lines = []
-    code_lang = ''
 
     while i < len(lines):
         line = lines[i]
 
-        # Skip the title line (already handled)
+        # Skip the title line (already on cover)
         if i == 0 and line.startswith('# '):
             i += 1
             continue
@@ -84,17 +176,18 @@ def build_doc():
         if line.strip().startswith('```'):
             if not in_code:
                 in_code = True
-                code_lang = line.strip()[3:].strip()
                 code_lines = []
             else:
-                p = doc.add_paragraph()
-                p.paragraph_format.left_indent = Inches(0.2)
-                p.paragraph_format.space_before = Pt(2)
-                p.paragraph_format.space_after = Pt(6)
-                run = p.add_run('\n'.join(code_lines))
-                run.font.name = 'Consolas'
-                run.font.size = Pt(9)
-                run.font.color.rgb = RGBColor(50, 50, 50)
+                # Code block as styled table
+                code_table = doc.add_table(rows=1, cols=1)
+                code_table.alignment = WD_TABLE_ALIGNMENT.LEFT
+                code_cell = code_table.cell(0, 0)
+                code_cell.width = Inches(6)
+                set_cell_shading(code_cell, DARK_GRAY)
+                set_cell_border(code_cell, GOLD, size='4')
+                code_para = code_cell.paragraphs[0]
+                run = code_para.add_run('\n'.join(code_lines))
+                set_run_font(run, name='Consolas', size=9, color=OFF_WHITE)
                 in_code = False
             i += 1
             continue
@@ -123,27 +216,41 @@ def build_doc():
             rows, i = parse_table(lines, i)
             if rows:
                 table = doc.add_table(rows=1, cols=len(rows[0]))
-                table.style = 'Light Grid Accent 1'
+                table.alignment = WD_TABLE_ALIGNMENT.CENTER
+                table.style = 'Table Grid'
                 hdr_cells = table.rows[0].cells
                 for col_idx, cell_text in enumerate(rows[0]):
-                    hdr_cells[col_idx].text = cell_text
+                    set_cell_shading(hdr_cells[col_idx], GOLD)
+                    set_cell_border(hdr_cells[col_idx], GOLD, size='6')
+                    hdr_cells[col_idx].text = ''
+                    run = hdr_cells[col_idx].paragraphs[0].add_run(cell_text)
+                    set_run_font(run, bold=True, color=BLACK)
                 for row in rows[1:]:
                     row_cells = table.add_row().cells
                     for col_idx, cell_text in enumerate(row):
-                        row_cells[col_idx].text = cell_text
+                        set_cell_shading(row_cells[col_idx], DARK_GRAY)
+                        set_cell_border(row_cells[col_idx], GOLD, size='4')
+                        row_cells[col_idx].text = ''
+                        run = row_cells[col_idx].paragraphs[0].add_run(cell_text)
+                        set_run_font(run, color=OFF_WHITE)
             continue
 
-        # Image placeholder in markdown: ![alt](path)
+        # Images
         img_match = re.match(r'!\[([^\]]*)\]\(([^)]+)\)', line.strip())
         if img_match:
             alt, path = img_match.groups()
-            doc.add_paragraph(alt, style='Intense Quote')
+            caption = doc.add_paragraph()
+            caption.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            run = caption.add_run(alt)
+            set_run_font(run, size=10, color=GOLD, bold=True)
             try:
                 doc.add_picture(IMG_PATH, width=Inches(5.8))
                 last_paragraph = doc.paragraphs[-1]
                 last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
             except Exception as e:
-                doc.add_paragraph(f'[Image not inserted: {path} - {e}]')
+                err = doc.add_paragraph()
+                run = err.add_run(f'[Image not inserted: {path} - {e}]')
+                set_run_font(run, color=(255, 0, 0))
             i += 1
             continue
 
@@ -151,9 +258,6 @@ def build_doc():
         if line.strip():
             p = doc.add_paragraph()
             add_formatted_text(p, line)
-        else:
-            # Add small spacer instead of blank paragraph
-            pass
 
         i += 1
 
