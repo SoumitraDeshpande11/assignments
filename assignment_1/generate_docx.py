@@ -87,16 +87,22 @@ def parse_table(lines, start_idx):
     return rows, i
 
 
-def set_page_background(section, color):
-    sectPr = section._sectPr
-    shd = OxmlElement('w:shd')
-    shd.set(qn('w:fill'), '%02x%02x%02x' % color)
-    shd.set(qn('w:val'), 'clear')
-    sectPr.append(shd)
+def set_document_background(doc, color):
+    """Set the page background color so Word/LibreOffice actually renders it."""
+    # <w:background w:color="..."/>
+    background = OxmlElement('w:background')
+    background.set(qn('w:color'), '%02x%02x%02x' % color)
+    doc.element.insert(0, background)
+
+    # <w:displayBackgroundShape/> in settings so the background is shown
+    settings_el = doc.settings.element
+    display_bg = OxmlElement('w:displayBackgroundShape')
+    settings_el.append(display_bg)
 
 
 def build_doc():
     doc = Document()
+    set_document_background(doc, BLACK)
 
     # Page setup
     section = doc.sections[0]
@@ -106,7 +112,6 @@ def build_doc():
     section.bottom_margin = Cm(2)
     section.left_margin = Cm(2.5)
     section.right_margin = Cm(2.5)
-    set_page_background(section, BLACK)
     add_page_number(section)
 
     # Default styles
