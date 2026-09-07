@@ -59,7 +59,13 @@ Scaffold
 
 ---
 
-## 5. Preview
+## 5. Source Code
+
+![lib/main.dart — dashboard widget tree](assets/code_main.png)
+
+---
+
+## 6. Layout Preview
 
 ![Dashboard at phone width](assets/screenshot.png)
 
@@ -67,7 +73,13 @@ The preview shows the narrow layout: summary chips on top (via `Expanded`), a 2-
 
 ---
 
-## 6. Run Instructions
+## 7. Terminal
+
+![Terminal session: dart format, generators, git](assets/terminal.png)
+
+---
+
+## 8. Run Instructions
 
 ```bash
 flutter pub get
@@ -78,7 +90,7 @@ Resize the window (or rotate the device) to watch the column count and section a
 
 ---
 
-## 7. Possible Extensions
+## 9. Possible Extensions
 
 - Replace the breakpoint math with `LayoutBuilder` constraints.
 - Add pull-to-refresh on the activity `ListView`.

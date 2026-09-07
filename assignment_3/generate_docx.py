@@ -65,7 +65,9 @@ def build():
             i += 1
             continue
         if line.startswith("!["):
-            doc.add_picture(IMG_PATH, width=Inches(2.6))
+            match = re.search(r"\(([^)]+)\)", line)
+            path = match.group(1) if match else IMG_PATH
+            doc.add_picture(path, width=Inches(2.6) if "screenshot" in path else Inches(6.2))
             i += 1
             continue
         if line.startswith("#"):

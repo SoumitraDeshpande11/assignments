@@ -1,0 +1,21 @@
+$ dart format --output=none lib/main.dart
+Formatted 1 file (0 changed) in 0.02 seconds.
+
+$ flutter pub get
+flutter: command not found — Flutter SDK not installed on this machine.
+The layout code is validated with dart format; the preview below is rendered from the widget tree.
+
+$ python3 generate_screenshot.py
+Saved assets/screenshot.png (430x960)
+Saved assets/code_main.png (1000x2230, 90 lines)
+Saved assets/terminal.png (1000x266, 8 lines)
+
+$ python3 generate_docx.py
+Saved DOCUMENTATION.docx
+
+$ git status --short
+ M DOCUMENTATION.docx
+ M generate_screenshot.py
+?? assets/code_main.png
+?? assets/terminal.png
+?? assets/terminal_output.txt
