@@ -65,17 +65,27 @@ Scaffold
 
 ---
 
-## 6. Layout Preview
+## 6. App Screenshots
+
+The app was built for the web (`flutter build web`) and captured in Chrome at two window sizes.
+
+**Phone width (500px)** — 2-column grid, sections stacked:
 
 ![Dashboard at phone width](assets/screenshot.png)
 
-The preview shows the narrow layout: summary chips on top (via `Expanded`), a 2-column `GridView` of stat cards, and the `ListView` activity feed below.
+**Desktop width (1280px)** — 4-column grid, activity panel beside the grid via `Flexible`:
+
+![Dashboard at desktop width](assets/screenshot_desktop.png)
+
+The same code produces both layouts; only the `MediaQuery` width decides.
 
 ---
 
 ## 7. Terminal
 
-![Terminal session: dart format, generators, git](assets/terminal.png)
+Real build-and-run session: `flutter pub get`, `flutter analyze` (no issues), `flutter build web`, then headless Chrome captures at both widths.
+
+![Terminal session: flutter pub get, analyze, build web, screenshots](assets/terminal.png)
 
 ---
 

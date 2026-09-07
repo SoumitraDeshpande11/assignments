@@ -1,21 +1,25 @@
-$ dart format --output=none lib/main.dart
-Formatted 1 file (0 changed) in 0.02 seconds.
+$ flutter --version
+Flutter 3.47.2 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision d3b14c8769 (12 days ago) • 2026-08-26 16:07:51 -0700
+Engine • hash 1cf1c4773fb941c4c74a7f8bb144a8837596c0f4 (revision a804b26164) (12 days ago) • 2026-08-26 18:46:13.000Z
+Tools • Dart 3.13.2 • DevTools 2.60.0
 
 $ flutter pub get
-flutter: command not found — Flutter SDK not installed on this machine.
-The layout code is validated with dart format; the preview below is rendered from the widget tree.
+Got dependencies!
 
-$ python3 generate_screenshot.py
-Saved assets/screenshot.png (430x960)
-Saved assets/code_main.png (1000x2230, 90 lines)
-Saved assets/terminal.png (1000x266, 8 lines)
+$ flutter analyze
+No issues found! (ran in 5.6s)
 
-$ python3 generate_docx.py
-Saved DOCUMENTATION.docx
+$ flutter build web --release
+Compiling lib/main.dart for the Web...                          
+Compiling lib/main.dart for the Web...                             31.0s
+✓ Built build/web
 
-$ git status --short
- M DOCUMENTATION.docx
- M generate_screenshot.py
-?? assets/code_main.png
-?? assets/terminal.png
-?? assets/terminal_output.txt
+$ python3 -m http.server 8734 -d build/web &
+[server started]
+
+$ chrome --headless --window-size=500,950 --screenshot=assets/screenshot.png localhost:8734
+[saved 500x950 — phone layout: 2 columns, stacked sections]
+
+$ chrome --headless --window-size=1280,800 --screenshot=assets/screenshot_desktop.png localhost:8734
+[saved 1280x800 — desktop layout: 4 columns, grid + activity side by side]
