@@ -1,0 +1,16 @@
+name: assignment_3
+description: A responsive multi-section dashboard using ListView, GridView, MediaQuery, and Flexible/Expanded.
+publish_to: 'none'
+version: 1.0.0
+
+environment:
+  sdk: '^3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+
+flutter:
+  uses-material-design: true
