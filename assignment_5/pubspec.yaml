@@ -1,0 +1,17 @@
+name: assignment_5
+description: A todo list app using StatefulWidget and setState with add, delete, and mark-complete.
+publish_to: 'none'
+version: 1.0.0
+
+environment:
+  sdk: '^3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

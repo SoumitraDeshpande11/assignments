@@ -1,0 +1,28 @@
+$ flutter --version
+Flutter 3.47.2 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision d3b14c8769 (12 days ago) • 2026-08-26 16:07:51 -0700
+Engine • hash 1cf1c4773fb941c4c74a7f8bb144a8837596c0f4 (revision a804b26164)
+Tools • Dart 3.13.2 • DevTools 2.60.0
+
+$ flutter pub get
+Got dependencies!
+
+$ flutter analyze
+No issues found! (ran in 3.9s)
+
+$ flutter build web --release
+Compiling lib/main.dart for the Web...                             21.0s
+✓ Built build/web
+
+$ flutter run -d web-server --web-port=8741
+Launching lib/main.dart on Web Server in debug mode...
+Waiting for connection from debug service on Web Server...         12.8s
+lib/main.dart is being served at http://localhost:8741
+
+Flutter run key commands.
+r Hot reload.
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
