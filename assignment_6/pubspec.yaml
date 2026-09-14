@@ -1,0 +1,17 @@
+name: assignment_6
+description: A product listing app using ListView.builder with a data model class and search/filter via setState.
+publish_to: 'none'
+version: 1.0.0
+
+environment:
+  sdk: '^3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
