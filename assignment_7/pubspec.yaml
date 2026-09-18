@@ -1,0 +1,17 @@
+name: assignment_7
+description: A 3-screen app (Home, Form, Detail) using named routes with a validated registration form.
+publish_to: 'none'
+version: 1.0.0
+
+environment:
+  sdk: '^3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
