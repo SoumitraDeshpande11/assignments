@@ -1,0 +1,19 @@
+name: assignment_8
+description: Fetches data from a public REST API (JSONPlaceholder), displays it with FutureBuilder, and caches the last result with SharedPreferences.
+publish_to: 'none'
+version: 1.0.0
+
+environment:
+  sdk: '^3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+  shared_preferences: ^2.3.0
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
