@@ -1,0 +1,17 @@
+name: assignment_4
+description: A Flutter profile card screen using Column, Row, Container, CircleAvatar, Text, and Icon with custom theme colors.
+publish_to: 'none'
+version: 1.0.0
+
+environment:
+  sdk: '^3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
